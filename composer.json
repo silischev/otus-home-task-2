@@ -1,0 +1,25 @@
+{
+    "name": "asil/otus-home-task-2",
+    "description": "simple socket server",
+    "type": "project",
+    "authors": [
+        {
+          "name": "Anton Silischev"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "asil/otus-home-task-1.1": "^2.0",
+        "symfony/console": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Asil\\Otus\\HomeTask_2\\": "src/"
+        }
+    },
+    "license": "mit",
+    "minimum-stability": "stable",
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
+    }
+}
