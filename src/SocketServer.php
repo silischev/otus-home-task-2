@@ -2,11 +2,10 @@
 
 namespace Asil\Otus\HomeTask_2;
 
-use Asil\Otus\HomeTask_1_1\SimpleBracketsProcessor;
 use Asil\Otus\HomeTask_2\Exceptions\SocketException;
 use Asil\Otus\HomeTask_2\Services\SocketDataValidationService;
 
-class SocketServer implements SocketInterface
+abstract class SocketServer implements SocketInterface
 {
     private $host;
     private $protocol;
@@ -51,7 +50,7 @@ class SocketServer implements SocketInterface
         $this->socket = @socket_create($this->protocol, SOCK_STREAM, SOL_TCP);
 
         if ($this->socket === false) {
-            throw new SocketException('Couldn`t create socket: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Couldn`t create socket: ');
         }
 
         return $this->socket;
@@ -64,7 +63,7 @@ class SocketServer implements SocketInterface
     public function bind()
     {
         if (@socket_bind($this->socket, $this->host, $this->port) === false) {
-            throw new SocketException('Couldn`t bind socket: ' . socket_strerror(socket_last_error()));
+                throw new SocketException('Couldn`t bind socket: ');
         }
     }
 
@@ -75,7 +74,7 @@ class SocketServer implements SocketInterface
     public function listen()
     {
         if (@socket_listen($this->socket) === false) {
-            throw new SocketException('Couldn`t listen socket: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Couldn`t listen socket: ');
         }
     }
 
@@ -94,7 +93,7 @@ class SocketServer implements SocketInterface
         $this->socketsStorage = array_merge($this->socketsStorage, $this->clients);
 
         if (@socket_select($this->socketsStorage, $write, $except, $timeout) === false) {
-            throw new SocketException('Couldn`t accept array of sockets: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Couldn`t accept array of sockets: ');
         }
 
         if (in_array($this->socket, $this->socketsStorage)) {
@@ -111,7 +110,7 @@ class SocketServer implements SocketInterface
         $spawn = @socket_accept($this->socket);
 
         if ($spawn === false) {
-            throw new SocketException('Couldn`t accept socket: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Couldn`t accept socket: ');
         }
 
         return $spawn;
@@ -127,7 +126,7 @@ class SocketServer implements SocketInterface
         $input = @socket_read($client, $this->maxByteReadLength);
 
         if ($input === false) {
-            throw new SocketException('Could not read input: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Could not read input: ');
         }
 
         return trim($input);
@@ -140,10 +139,10 @@ class SocketServer implements SocketInterface
      */
     public function write($client, $output)
     {
-        $out = @socket_write($client, $output, strlen($output)) or die('Could not write output' . PHP_EOL);
+        $out = @socket_write($client, $output, strlen($output));
 
         if ($out === false) {
-            throw new SocketException('Could not write output: ' . socket_strerror(socket_last_error()));
+            throw new SocketException('Could not write output: ');
         }
     }
 
@@ -183,23 +182,17 @@ class SocketServer implements SocketInterface
                 $input = $this->read($client);
 
                 if ($input !== 'exit') {
-                    $this->write($client, $this->bracketStringValidation($input) . PHP_EOL);
+                    $result = $this->onClientSendMessage($input);
+
+                    if (!empty($result)) {
+                        $this->write($client, $result . PHP_EOL);
+                    }
                 } else {
                     $this->closeClientSocket($key, $client);
                     break;
                 }
             }
         }
-    }
-
-    /**
-     * @param $key
-     * @param resource $client
-     */
-    private function closeClientSocket($key, $client)
-    {
-        unset($this->clients[$key]);
-        $this->close($client);
     }
 
     public function cleanResources()
@@ -214,21 +207,19 @@ class SocketServer implements SocketInterface
     }
 
     /**
-     * @param string $line
-     * @return string
+     * @param $key
+     * @param resource $client
      */
-    private function bracketStringValidation(string $line): string
+    private function closeClientSocket($key, $client)
     {
-        $msg = '';
-
-        try {
-            $bracketsProcessor = new SimpleBracketsProcessor();
-            $msg = $bracketsProcessor->isValidBracketLine($line) ? 'String is valid' : 'String is invalid';
-        } catch (\Throwable $e) {
-            $msg = $e->getMessage();
-        }
-
-        return $msg;
+        unset($this->clients[$key]);
+        $this->close($client);
     }
+
+    /**
+     * @param string $msg
+     * @return mixed
+     */
+    abstract protected function onClientSendMessage(string $msg);
 
 }
