@@ -10,8 +10,14 @@ abstract class SocketServer implements SocketInterface
     private $host;
     private $protocol;
     private $port;
+    /**
+     * @var resource
+     */
     private $socket;
     private $clients = [];
+    /*
+     * @var array
+     */
     private $socketsStorage;
     private $maxByteReadLength = 2048;
 
@@ -29,15 +35,16 @@ abstract class SocketServer implements SocketInterface
 
     public function run()
     {
-        $this->socket = $this->create();
-        $this->bind();
-        $this->listen();
-
-        do {
-            $this->loop();
-        } while (true);
-
-        $this->cleanResources();
+        try {
+            $this->socket = $this->buildSocket();
+            do {
+                $this->loop();
+            } while (true);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        } finally {
+            $this->cleanResources();
+        }
     }
 
     /**
@@ -47,7 +54,7 @@ abstract class SocketServer implements SocketInterface
     public function create()
     {
         set_time_limit(0);
-        $this->socket = @socket_create($this->protocol, SOCK_STREAM, SOL_TCP);
+        $this->socket = socket_create($this->protocol, SOCK_STREAM, SOL_TCP);
 
         if ($this->socket === false) {
             throw new SocketException('Couldn`t create socket: ');
@@ -62,8 +69,8 @@ abstract class SocketServer implements SocketInterface
      */
     public function bind()
     {
-        if (@socket_bind($this->socket, $this->host, $this->port) === false) {
-                throw new SocketException('Couldn`t bind socket: ');
+        if (socket_bind($this->socket, $this->host, $this->port) === false) {
+            throw new SocketException('Couldn`t bind socket: ');
         }
     }
 
@@ -73,7 +80,7 @@ abstract class SocketServer implements SocketInterface
      */
     public function listen()
     {
-        if (@socket_listen($this->socket) === false) {
+        if (socket_listen($this->socket) === false) {
             throw new SocketException('Couldn`t listen socket: ');
         }
     }
@@ -92,7 +99,7 @@ abstract class SocketServer implements SocketInterface
         $this->socketsStorage[] = $this->socket;
         $this->socketsStorage = array_merge($this->socketsStorage, $this->clients);
 
-        if (@socket_select($this->socketsStorage, $write, $except, $timeout) === false) {
+        if (socket_select($this->socketsStorage, $write, $except, $timeout) === false) {
             throw new SocketException('Couldn`t accept array of sockets: ');
         }
 
@@ -107,7 +114,7 @@ abstract class SocketServer implements SocketInterface
      */
     public function accept()
     {
-        $spawn = @socket_accept($this->socket);
+        $spawn = socket_accept($this->socket);
 
         if ($spawn === false) {
             throw new SocketException('Couldn`t accept socket: ');
@@ -123,7 +130,7 @@ abstract class SocketServer implements SocketInterface
      */
     public function read($client)
     {
-        $input = @socket_read($client, $this->maxByteReadLength);
+        $input = socket_read($client, $this->maxByteReadLength);
 
         if ($input === false) {
             throw new SocketException('Could not read input: ');
@@ -139,7 +146,7 @@ abstract class SocketServer implements SocketInterface
      */
     public function write($client, $output)
     {
-        $out = @socket_write($client, $output, strlen($output));
+        $out = socket_write($client, $output, strlen($output));
 
         if ($out === false) {
             throw new SocketException('Could not write output: ');
@@ -168,6 +175,19 @@ abstract class SocketServer implements SocketInterface
     public function getSocket()
     {
         return $this->socket;
+    }
+
+    /**
+     * @return resource
+     * @throws SocketException
+     */
+    private function buildSocket()
+    {
+        $socket = $this->create();
+        $this->bind();
+        $this->listen();
+
+        return $socket;
     }
 
     /**
