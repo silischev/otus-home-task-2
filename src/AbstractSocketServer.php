@@ -5,24 +5,59 @@ namespace Asil\Otus\HomeTask_2;
 use Asil\Otus\HomeTask_2\Exceptions\SocketException;
 use Asil\Otus\HomeTask_2\Services\SocketDataValidationService;
 
-abstract class SocketServer implements SocketInterface
+abstract class AbstractSocketServer implements SocketInterface
 {
-    private $host;
-    private $protocol;
-    private $port;
     /**
+     * AbstractSocketServer host
+     *
+     * @var string
+     */
+    private $host;
+
+    /**
+     * AbstractSocketServer protocol
+     *
+     * @var int
+     */
+    private $protocol;
+
+    /**
+     * AbstractSocketServer port
+     *
+     * @var int
+     */
+    private $port;
+
+    /**
+     * AbstractSocketServer socket
+     *
      * @var resource
      */
     private $socket;
+
+    /**
+     * AbstractSocketServer clients
+     *
+     * @var resource[]
+     */
     private $clients = [];
-    /*
-     * @var array
+
+    /**
+     * AbstractSocketServer socketsStorage
+     *
+     * @var resource[]
      */
     private $socketsStorage;
+
+    /**
+     * AbstractSocketServer maxByteReadLength
+     * @var int
+     */
     private $maxByteReadLength = 2048;
 
     /**
      * SocketServer constructor.
+     *
      * @param string $host
      * @param int $port
      */
@@ -33,13 +68,20 @@ abstract class SocketServer implements SocketInterface
         $this->port = $port;
     }
 
+    /**
+     * Run server
+     *
+     * @throws \Exception
+     */
     public function run()
     {
         try {
-            $this->socket = $this->buildSocket();
+            $this->buildSocket();
+
             do {
                 $this->loop();
             } while (true);
+
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         } finally {
@@ -48,7 +90,10 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
-     * @return resource
+     * Create a socket
+     *
+     * @return $this
+     *
      * @throws SocketException
      */
     public function create()
@@ -60,11 +105,14 @@ abstract class SocketServer implements SocketInterface
             throw new SocketException('Couldn`t create socket: ');
         }
 
-        return $this->socket;
+        return $this;
     }
 
     /**
-     * @return void
+     * Binds a name to a socket
+     *
+     * @return $this
+     *
      * @throws SocketException
      */
     public function bind()
@@ -72,10 +120,15 @@ abstract class SocketServer implements SocketInterface
         if (socket_bind($this->socket, $this->host, $this->port) === false) {
             throw new SocketException('Couldn`t bind socket: ');
         }
+
+        return $this;
     }
 
     /**
-     * @return void
+     * Listens for a connection on a socket
+     *
+     * @return $this
+     *
      * @throws SocketException
      */
     public function listen()
@@ -83,10 +136,15 @@ abstract class SocketServer implements SocketInterface
         if (socket_listen($this->socket) === false) {
             throw new SocketException('Couldn`t listen socket: ');
         }
+
+        return $this;
     }
 
     /**
+     * Select array of sockets and add accept connection to clients socket storage
+     *
      * @return void
+     *
      * @throws SocketException
      */
     public function select()
@@ -109,7 +167,10 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Accepts a connection on a socket
+     *
      * @return resource
+     *
      * @throws SocketException
      */
     public function accept()
@@ -124,8 +185,12 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Reads a maximum of length bytes from a socket
+     *
      * @param  resource $client
+     *
      * @return string
+     *
      * @throws SocketException
      */
     public function read($client)
@@ -140,8 +205,11 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Write to a socket
+     *
      * @param resource $client
      * @param string $output
+     *
      * @throws SocketException
      */
     public function write($client, $output)
@@ -154,6 +222,8 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Closes a socket resource
+     *
      * @param resource $client
      */
     public function close($client)
@@ -163,10 +233,14 @@ abstract class SocketServer implements SocketInterface
 
     /**
      * @param int $length
+     *
+     * @return $this
      */
     public function setMaxByteReadLength(int $length)
     {
         $this->maxByteReadLength = $length;
+
+        return $this;
     }
 
     /**
@@ -178,19 +252,23 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
-     * @return resource
+     * @return $this
+     *
      * @throws SocketException
      */
     private function buildSocket()
     {
-        $socket = $this->create();
-        $this->bind();
-        $this->listen();
+        $this
+            ->create()
+            ->bind()
+            ->listen();
 
-        return $socket;
+        return $this;
     }
 
     /**
+     * Process new connections
+     *
      * @throws SocketException
      */
     private function loop()
@@ -215,6 +293,9 @@ abstract class SocketServer implements SocketInterface
         }
     }
 
+    /**
+     * Clean all active resources
+     */
     public function cleanResources()
     {
         if (!empty($this->clients)) {
@@ -227,6 +308,8 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Close socket
+     *
      * @param $key
      * @param resource $client
      */
@@ -237,7 +320,10 @@ abstract class SocketServer implements SocketInterface
     }
 
     /**
+     * Process client message
+     *
      * @param string $msg
+     *
      * @return mixed
      */
     abstract protected function onClientSendMessage(string $msg);

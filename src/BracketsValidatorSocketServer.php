@@ -4,10 +4,11 @@ namespace Asil\Otus\HomeTask_2;
 
 use Asil\Otus\HomeTask_1_1\SimpleBracketsProcessor;
 
-class BracketsValidatorSocketServer extends SocketServer
+class BracketsValidatorSocketServer extends AbstractSocketServer
 {
     /**
      * @param string|null $msg
+     *
      * @return string|null
      */
     protected function onClientSendMessage(string $msg = null)

@@ -9,9 +9,9 @@ class SocketDataValidationService
     /**
      * @param string $host
      * @throws InvalidArgumentException
-     * @return int|null
+     * @return int
      */
-    public static function getProtocolVersionByHost(string $host): ?int
+    public static function getProtocolVersionByHost(string $host): int
     {
         $protocol = null;
 
