@@ -5,17 +5,15 @@ namespace Asil\Otus\HomeTask_2\ConsoleCommands;
 use Asil\Otus\HomeTask_2\BracketsValidatorSocketServer;
 use Asil\Otus\HomeTask_2\Exceptions\SocketException;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class SocketServerCommand extends Command
 {
     protected function configure()
     {
         $this->setName('server');
-        $this->addArgument('host', InputArgument::REQUIRED, 'Please enter host');
-        $this->addArgument('port', InputArgument::REQUIRED, 'Please enter connection port number');
     }
 
     /**
@@ -26,8 +24,10 @@ class SocketServerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $host = $input->getArgument('host');
-        $port = $input->getArgument('port');
+        $config = Yaml::parseFile(__DIR__ . DIRECTORY_SEPARATOR . '../../configs/config.yaml');
+
+        $host = $config['host'];
+        $port = $config['port'];
 
         try {
             $server = new BracketsValidatorSocketServer($host, (int) $port);

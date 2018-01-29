@@ -3,10 +3,12 @@
 Usage example:
 - Run server
 ```
-nohup php console server <host> <port> &amp;
-For example: nohup php console server 127.0.0.1 1234 &amp;
+$ nohup php console server &
 ```
 - Connection for client
 ```php
-$ telnet 127.0.0.1 1234
+$ telnet 127.0.0.1 5555
+```
+```
+Server configuration file: ./configs/config.yaml
 ```
