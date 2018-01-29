@@ -2,7 +2,8 @@
 
 namespace Asil\Otus\HomeTask_2\ConsoleCommands;
 
-use Asil\Otus\HomeTask_2\BracketsValidatorSocketServer;
+use Asil\Otus\HomeTask_1_1\SimpleBracketsProcessor;
+use Asil\Otus\HomeTask_2\SocketServer;
 use Asil\Otus\HomeTask_2\Exceptions\SocketException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,8 +30,21 @@ class SocketServerCommand extends Command
         $host = $config['host'];
         $port = $config['port'];
 
+        $onClientSendMessageHandlerFunction = (function ($message) {
+            $result = null;
+
+            try {
+                $bracketsProcessor = new SimpleBracketsProcessor();
+                $result = $bracketsProcessor->isValidBracketLine($message) ? 'String is valid' : 'String is invalid';
+            } catch (\Throwable $e) {
+                $result = $e->getMessage();
+            }
+
+            return $result;
+        });
+
         try {
-            $server = new BracketsValidatorSocketServer($host, (int) $port);
+            $server = new SocketServer($host, (int) $port, $onClientSendMessageHandlerFunction);
             $server->run();
         } catch (SocketException|\Throwable $e) {
             $output->writeln($e->getMessage());

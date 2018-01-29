@@ -5,7 +5,7 @@ namespace Asil\Otus\HomeTask_2;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
-class BracketsValidatorSocketServerTest extends TestCase
+class SocketServerTest extends TestCase
 {
     const HOST = '127.0.0.1';
     const PORT = 1234;
@@ -17,9 +17,14 @@ class BracketsValidatorSocketServerTest extends TestCase
 
     public function testSocketCreation()
     {
-        $this->server = new BracketsValidatorSocketServer(self::HOST, self::PORT);
+        $msg = '';
+        $onClientSendMessageHandler = (function () {
+            return;
+        });
 
-        $method = $this->getPrivateMethod(BracketsValidatorSocketServer::class, 'buildSocket');
+        $this->server = new SocketServer(self::HOST, self::PORT, $onClientSendMessageHandler);
+
+        $method = $this->getPrivateMethod(SocketServer::class, 'buildSocket');
         $method->invokeArgs($this->server, []);
 
         $this->assertSame(is_resource(($this->server->getSocket())), true);
@@ -29,7 +34,12 @@ class BracketsValidatorSocketServerTest extends TestCase
     public function testServerInvalidHostException()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->server = new BracketsValidatorSocketServer('127.0.', self::PORT);
+
+        $onClientSendMessageHandler = (function () {
+            return;
+        });
+
+        $this->server = new SocketServer('127.0.', self::PORT, $onClientSendMessageHandler);
     }
 
     /**

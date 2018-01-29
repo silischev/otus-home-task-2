@@ -5,7 +5,7 @@ namespace Asil\Otus\HomeTask_2;
 use Asil\Otus\HomeTask_2\Exceptions\SocketException;
 use Asil\Otus\HomeTask_2\Services\SocketDataValidationService;
 
-abstract class AbstractSocketServer implements SocketInterface
+class SocketServer implements SocketInterface
 {
     /**
      * AbstractSocketServer host
@@ -36,6 +36,13 @@ abstract class AbstractSocketServer implements SocketInterface
     private $socket;
 
     /**
+     * Function that trigger on send message bu socket client
+     *
+     * @var callable
+     */
+    private $onClientSendMessageHandler;
+
+    /**
      * AbstractSocketServer clients
      *
      * @var resource[]
@@ -60,12 +67,14 @@ abstract class AbstractSocketServer implements SocketInterface
      *
      * @param string $host
      * @param int $port
+     * @param callable $onClientSendMessageHandler
      */
-    public function __construct(string $host, int $port)
+    public function __construct(string $host, int $port, callable $onClientSendMessageHandler)
     {
         $this->protocol = SocketDataValidationService::getProtocolVersionByHost($host);
         $this->host = $host;
         $this->port = $port;
+        $this->onClientSendMessageHandler = $onClientSendMessageHandler;
     }
 
     /**
@@ -280,7 +289,7 @@ abstract class AbstractSocketServer implements SocketInterface
                 $input = $this->read($client);
 
                 if ($input !== 'exit') {
-                    $result = $this->onClientSendMessage($input);
+                    $result = ($this->onClientSendMessageHandler)($input);
 
                     if (!empty($result)) {
                         $this->write($client, $result . PHP_EOL);
@@ -326,6 +335,6 @@ abstract class AbstractSocketServer implements SocketInterface
      *
      * @return mixed
      */
-    abstract protected function onClientSendMessage(string $msg);
+    //abstract protected function onClientSendMessage(string $msg);
 
 }
