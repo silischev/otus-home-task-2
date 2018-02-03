@@ -17,7 +17,6 @@ class SocketServerTest extends TestCase
 
     public function testSocketCreation()
     {
-        $msg = '';
         $onClientSendMessageHandler = (function () {
             return;
         });

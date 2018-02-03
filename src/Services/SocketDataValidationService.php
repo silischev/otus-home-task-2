@@ -8,7 +8,9 @@ class SocketDataValidationService
 {
     /**
      * @param string $host
+     *
      * @throws InvalidArgumentException
+     *
      * @return int
      */
     public static function getProtocolVersionByHost(string $host): int

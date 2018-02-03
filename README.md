@@ -1,4 +1,4 @@
-# otus-home-task-2 (simple socket server)
+# otus-home-task (simple socket server)
 
 Usage example:
 - Run server
@@ -6,8 +6,8 @@ Usage example:
 $ nohup php console server &
 ```
 - Connection for client
-```php
-$ telnet 127.0.0.1 5555
+```
+$ telnet 127.0.0.1 2222
 ```
 ```
 Server configuration file: ./configs/config.yaml
