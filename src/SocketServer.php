@@ -79,6 +79,14 @@ class SocketServer implements SocketInterface
     }
 
     /**
+     * @return int
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
      * Run server
      *
      * @throws \Exception
@@ -346,22 +354,6 @@ class SocketServer implements SocketInterface
 
         $this->close($this->socket);
         unset($this->socket);
-    }
-
-    /**
-     * Close socket
-     *
-     * @param $key
-     * @param resource $client
-     */
-    private function closeClientSocket($key, $client)
-    {
-        $this->close($client);
-    }
-
-    public function getPort()
-    {
-        return $this->port;
     }
 
 }
