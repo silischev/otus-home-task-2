@@ -9,7 +9,20 @@ interface SocketInterface
     public function listen();
     public function accept();
     public function select();
+
+    /**
+     * @param resource $socket
+     *
+     * @return string
+     */
     public function read($socket);
+
+    /**
+     * @param resource $socket
+     * @param string $output
+     *
+     * @return string
+     */
     public function write($socket, $output);
     public function close($socket);
 }
